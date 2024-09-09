@@ -1,0 +1,199 @@
+<?php
+$conn=new mysqli('localhost','root','','insert_update_delete');
+?>
+////////////////////////////////////////////////////////////////////
+
+<?php
+include_once("conn.php");
+
+if(isset($_POST['delete']))	
+{
+       $profile_id=$_POST['profile_id'];
+       
+      $qury=mysqli_query($conn,"DELETE FROM profile WHERE profile_id='$profile_id'");
+      header("location:insert_update_delete.php?msg=Successfully deleted");
+}
+
+if(isset($_POST['submit']))
+{
+    $profile_name= $_POST['profile_name'] ;
+
+    if(isset($_FILES['profile_image'])){
+        $errors= array();
+        $profile_image=$_FILES['profile_image']['name'];
+        $profile_image_temp=$_FILES['profile_image']['tmp_name'];
+        if(empty($errors)==true){
+            move_uploaded_file($profile_image_temp,"profile_image/".$profile_image);
+        }
+    }
+    //`profie_id`, `profile_name`, `profile_image` SELECT * FROM `profile` WHERE 1
+    $sql="INSERT INTO profile (profile_name, profile_image)     
+    VALUES ('$profile_name', '$profile_image')";
+    $query=mysqli_query($conn,$sql);
+
+    if($query){
+///////////////////////////////////////////////////////////////
+        $i=0;
+        while(isset($_POST['facing_road'][$i]))
+                 {
+                if(trim($_POST['facing_road'][$i])!="")
+                {
+                    $property_facing=trim($_POST['property_facing'][$i]);
+                    //`id`, `post_property_id`, `facing_road`, `facing_road_unit`, `facing_road_condition`SELECT * FROM `users_post_road_details` WHERE 1
+                        $sql1="INSERT INTO users_post_road_details (post_property_id, property_facing)
+                        VALUES ($max_post_property_id, '$property_facing')";
+                        $insert2=mysqli_query($conn,$sql1);
+                      }
+                   $i++;
+                }
+/////////////////////////////////////////////////////////////
+
+
+
+
+        header("Location:insert_update_delete.php?msg=New record submited successfully");
+    }
+    else{
+        echo "Failed: " . mysqli_error($conn);
+    }
+}
+
+if(isset($_POST['update']))
+{
+    $profile_id=$_POST['profile_id'];
+    $profile_name=$_POST['profile_name'];
+
+    // Fetch Old data
+    $old_data_sql="SELECT * FROM profile WHERE  profile_id=$profile_id";
+    $old_data_query=mysqli_query($conn,$old_data_sql);
+    while($old_data=mysqli_fetch_array($old_data_query)) 
+    {
+        $profile_name_old=$old_data['profile_name'];
+        $profile_image_old=$old_data['profile_image'];
+    }
+    // Fetch Old data
+
+
+    if(!empty($_FILES['profile_image']['name'])){
+        $errors= array();
+        $profile_image=$_FILES['profile_image']['name'];
+        $profile_image_temp=$_FILES['profile_image']['tmp_name'];
+        if(empty($errors)==true){
+            unlink("profile_image/".$profile_image_old);
+            move_uploaded_file($profile_image_temp,"profile_image/".$profile_image);
+            $update1=mysqli_query($conn,"update  profile  set profile_image='$profile_image' where profile_id='$profile_id'");
+        }
+      }
+
+
+        $update=mysqli_query($conn,"update  profile  set profile_name='$profile_name' where profile_id='$profile_id'");
+                 
+  
+        if($update)
+        {
+            header("location:insert_update_delete.php?msg=Updated Successfully");
+        }
+        else
+        {
+            $err=mysql_error();
+        }
+
+}
+?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 50%;
+        }
+
+        td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+    </style>
+    <script>
+        function myFunction() {
+        if (confirm("Are you sure to delete?") == true) {            
+            return true;
+            } else {
+                return false;
+                
+            }
+        }
+    </script>
+</head>
+<body>
+    <?php if(isset($_REQUEST['xedit']))
+         {
+           $profile_id=$_REQUEST['profile_id'];
+		   $qre=mysqli_query($conn,"SELECT * FROM profile where profile_id=$profile_id");
+		   if($fetch=mysqli_fetch_array($qre))
+			{
+              $profile_id=$fetch['profile_id'];
+              $profile_name= $fetch['profile_name'] ;
+              $profile_image= $fetch['profile_image'] ;
+            }
+        }
+        ?>
+
+    <form action="" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="profile_id" value="<?php if(isset($_REQUEST['xedit'])) {echo $profile_id;}?>">
+
+        <input type="text" name="profile_name" value="<?php if(isset($_REQUEST['xedit'])) {echo $profile_name;}?>" placeholder="Entry name">
+        <input type="file" name="profile_image" value="<?php if(isset($_REQUEST['xedit'])) {echo $profile_image;}?>">
+        <?php if(isset($_REQUEST['xedit'])) {?> <img src="profile_image/<?php echo $profile_image;?>" width="50px;"/> <?php } ?>
+
+        <?php if(isset($_REQUEST['xedit'])) { ?><button class="btn btn-success" type="submit" name="update" >Update</button><?php } else {?><button class="btn btn-success" type="submit" name="submit" >Submit</button><?php } ?>
+
+    </form>
+
+
+    <table>
+        <?php
+        $sql="SELECT * FROM profile WHERE 1 order by profile_id DESC";
+        $query=mysqli_query($conn,$sql);
+        while($prd=mysqli_fetch_array($query)) 
+        {
+            $profile_id=$prd['profile_id'];
+            $profile_name=$prd['profile_name'];
+            $profile_image=$prd['profile_image'];
+        ?>
+
+        <tr>
+            <td>
+                Name : <?php echo $profile_name; ?>
+            </td>
+           
+            <td>
+                Picture : <img src="profile_image/<?php echo $profile_image; ?>" alt="" width="50px">
+            </td>
+
+            
+            <form method="post" action="" enctype="multipart/form-data" onsubmit="return myFunction();">          
+                <input type="hidden" name="profile_id" value="<?php echo $profile_id;?>" />
+
+                <td>
+                    <a href="insert_update_delete.php?xedit=1&profile_id=<?php echo $profile_id;?>">Update</a>
+                    <button type="submit" name="delete">Delete</button>
+                </td>
+            </form>
+        </tr>
+
+        <?php
+        }
+        ?>
+
+    </table>
+    
+</body>
+</html>

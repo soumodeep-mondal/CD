@@ -1,0 +1,13 @@
+<?php
+session_start();
+if(!isset($_SESSION['email']))
+{
+    header("location:encrypted_login.php");
+}
+else
+  {
+    $session_user_name=$_SESSION['email'];
+    $session_user_id=$_SESSION['emp_id'];
+    $session_user_role=$_SESSION['role'];
+  }
+?>
