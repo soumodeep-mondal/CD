@@ -26,6 +26,27 @@ if(isset($_POST['submit']))
             move_uploaded_file($profile_image_temp,"profile_image/".$profile_image);
         }
     }
+
+
+    
+    $emp_picture_file_name = '';
+    if (!empty($_FILES['emp_picture']['name'])) {
+        $errors = array();
+        $emp_picture_file = $_FILES['emp_picture']['name'];
+        $emp_picture_file_temp = $_FILES['emp_picture']['tmp_name'];
+        $file_extension = pathinfo($emp_picture_file, PATHINFO_EXTENSION);
+        $unique_id = uniqid();
+        $random_string = str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        $emp_picture_file_name = $unique_id . '_' . $random_string . '.' . $file_extension;
+        if (empty($errors) == true) {
+            move_uploaded_file($emp_picture_file_temp, "dashboard_source/emp_picture/" . $emp_picture_file_name);
+        }
+    }
+
+
+
+
+
     //`profie_id`, `profile_name`, `profile_image` SELECT * FROM `profile` WHERE 1
     $sql="INSERT INTO profile (profile_name, profile_image)     
     VALUES ('$profile_name', '$profile_image')";
